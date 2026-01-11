@@ -7,30 +7,24 @@ from sentence_transformers import SentenceTransformer
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 import torch
 
-# Verileri yüklüyoruz ve işliyoruz
 df = pd.read_csv("./data/client_hostname.csv")  # CSV dosyasının doğru yolu
 
-# Veri ön işleme
 cleaned_data = df[['client', 'hostname', 'alias_list', 'address_list']].copy()
 cleaned_data = cleaned_data.fillna('unknown')
 
-# Kodlama
 encoders = {}
 for column in ['client', 'hostname', 'alias_list', 'address_list']:
     encoder = LabelEncoder()
     cleaned_data[f'{column}_encoded'] = encoder.fit_transform(cleaned_data[column])
     encoders[column] = encoder
 
-# Verileri vektörleştiriyoruz
 vectorized_data = cleaned_data[['client_encoded', 'hostname_encoded', 'alias_list_encoded', 'address_list_encoded']].values
 vectorized_data = np.ascontiguousarray(vectorized_data, dtype=np.float32)
 
-# FAISS index oluşturuyoruz
 vector_dim = vectorized_data.shape[1]
 index = faiss.IndexFlatL2(vector_dim)
 index.add(vectorized_data)
 
-# hostname'i vektörleştirme ve PCA ile boyut indirgeme
 sentence_model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
 data_vectors = sentence_model.encode(cleaned_data['hostname'].tolist())
 data_vectors = np.array(data_vectors, dtype=np.float32)
@@ -39,11 +33,9 @@ pca = PCA(n_components=8)
 reduced_data_vectors = pca.fit_transform(data_vectors)
 reduced_data_vectors = np.ascontiguousarray(reduced_data_vectors, dtype=np.float32)
 
-# FAISS indeksini oluşturuyoruz
 index_reduced = faiss.IndexFlatL2(8)
 index_reduced.add(reduced_data_vectors)
 
-# GPT-2 modelini yükleyin
 gpt2_model_name = "gpt2"
 tokenizer = GPT2Tokenizer.from_pretrained(gpt2_model_name, clean_up_tokenization_spaces=False)
 gpt2_model = GPT2LMHeadModel.from_pretrained(gpt2_model_name)
@@ -52,7 +44,6 @@ gpt2_model.eval()
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
 
-# Fonksiyonlar
 def top_ip_addresses(df, n=5):
     top_ips = df['client'].value_counts().head(n).index.tolist()
     responses = []
@@ -114,7 +105,6 @@ def generate_response(question):
     else:
         return "Bu soruya yanıt verilemiyor."
 
-# Soru yanıtlarını oluşturma ve yazdırma
 questions = [
     "Son 24 saatte en çok erişim sağlayan IP adresleri nelerdir?",
     "En çok erişim yapan IP adreslerini ve bu adreslerin hangi hostname'lere karşılık geldiğini listeleyebilir misiniz?",
@@ -132,21 +122,17 @@ for question in questions:
     print(f"Soru: {question}")
     print(f"Yanıt: {response}\n")
 
-# Bir soruyu vektörleştirip arama yapma
 def search_question(question):
     question_vector = sentence_model.encode([question])
     question_vector_reduced = pca.transform(np.array(question_vector, dtype=np.float32))
     question_vector_reduced = np.ascontiguousarray(question_vector_reduced, dtype=np.float32)
 
-    # Benzer vektörleri arama
     D, I = index_reduced.search(question_vector_reduced, k=5)
     return cleaned_data.iloc[I[0]]
 
-# Bir örnek soru arama
 question = "Son 24 saatte en çok tıklanan haber hangisidir?"  # Örnek soru
 retrieved_logs = search_question(question)
 
-# GPT-2 modelinden yanıt oluşturma
 def generate_gpt2_response(question, context):
     input_text = f"{question}\n\nYanıt:\n{context}"
     inputs = tokenizer(input_text, return_tensors='pt', padding=True, truncation=True, max_length=512)
@@ -168,10 +154,10 @@ def generate_gpt2_response(question, context):
     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
     return response
 
-# GPT-2 yanıtını oluşturma ve yazdırma
 #Her bir aşamada sonucumu test ettim.
 context = "\n".join(
     [f"Client: {row['client']}, Hostname: {row['hostname']}, Address List: {row['address_list']}" for _, row in
      retrieved_logs.iterrows()])
 response = generate_gpt2_response(question, context)
 print("GPT-2 Yanıtı:", response)
+
