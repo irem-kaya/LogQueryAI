@@ -6,8 +6,6 @@ import torch
 
 
 df_test = pd.read_csv("data/client_hostname.csv")
-
-
 test_sample_size = 100
 df_test_sample = df_test.sample(n=test_sample_size, random_state=42)
 
@@ -20,13 +18,11 @@ def generate_question_answer_pairs(df):
 
 test_data = generate_question_answer_pairs(df_test_sample)
 
-
 model_name = "gpt2"
 tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 tokenizer.pad_token = tokenizer.eos_token
 model = GPT2LMHeadModel.from_pretrained(model_name, output_hidden_states=True)
 
-# Modeli değerlendirme moduna alın
 model.eval()
 
 def generate_predictions(questions):
@@ -63,4 +59,5 @@ predictions = [pair.split('\n')[0] for pair in test_data]
 
 average_similarity = calculate_similarity(predictions, true_answers)
 print(f"Ortalama Benzerlik: {average_similarity * 100:.2f}%")
+
 
