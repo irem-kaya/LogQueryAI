@@ -6,8 +6,6 @@ from sklearn.decomposition import PCA
 from sentence_transformers import SentenceTransformer
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 
-
-# Adım 1: Veriyi yüklüyoruz ve datayı temizliyoruz
 def load_and_preprocess_data(filepath):
     df = pd.read_csv(filepath)
 
@@ -27,7 +25,6 @@ def load_and_preprocess_data(filepath):
     return cleaned_data, encoders
 
 
-# Adım 2: Verileri vektörlüyoruz ve PCA ile boyutları indiriyoruz
 def create_faiss_index(cleaned_data):
     model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
     data_vectors = model.encode(cleaned_data['hostname'].tolist())
@@ -43,7 +40,6 @@ def create_faiss_index(cleaned_data):
     return index, pca
 
 
-# Soruya göre yanıt oluşturma
 def generate_response(question, cleaned_data, index, pca, tokenizer, gpt2_model):
     model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
     question_vector = model.encode(question)
@@ -101,3 +97,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
