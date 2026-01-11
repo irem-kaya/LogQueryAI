@@ -6,7 +6,6 @@ import faiss
 
 df = pd.read_csv("data/client_hostname.csv")
 
-# Select and clean necessary columns
 cleaned_data = df[['client', 'hostname', 'alias_list', 'address_list']].copy()
 
 client_encoder = LabelEncoder()
@@ -30,4 +29,5 @@ index = faiss.IndexFlatL2(vector_dim)
 vectorized_data = np.array(vectorized_data, dtype=np.float32)
 index.add(vectorized_data)
 print("Number of vectors in index:", index.ntotal)
+
 
