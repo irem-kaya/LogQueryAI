@@ -4,14 +4,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import torch
 
-# Test verilerini yükleyin
+
 df_test = pd.read_csv("data/client_hostname.csv")
 
-# Küçük bir test veri alt kümesi ile başlayın
+
 test_sample_size = 100
 df_test_sample = df_test.sample(n=test_sample_size, random_state=42)
 
-# Test verilerinden soru-cevap çiftlerini oluşturun
 def generate_question_answer_pairs(df):
     qa_pairs = []
     for _, row in df.iterrows():
@@ -21,7 +20,7 @@ def generate_question_answer_pairs(df):
 
 test_data = generate_question_answer_pairs(df_test_sample)
 
-# Modeli ve tokenizer'ı yükleyin
+
 model_name = "gpt2"
 tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 tokenizer.pad_token = tokenizer.eos_token
@@ -30,7 +29,6 @@ model = GPT2LMHeadModel.from_pretrained(model_name, output_hidden_states=True)
 # Modeli değerlendirme moduna alın
 model.eval()
 
-# Tahmin yapma
 def generate_predictions(questions):
     inputs = tokenizer(questions, return_tensors='pt', padding=True, truncation=True, max_length=512)
     with torch.no_grad():
@@ -59,11 +57,10 @@ def calculate_similarity(predictions, true_answers):
         similarity_scores.append(similarity[0][0])
     return np.mean(similarity_scores)
 
-# Gerçek yanıtlar ve tahminler
+
 true_answers = [pair.split('\n')[1].split('Yanıt: ')[1] for pair in test_data]
 predictions = [pair.split('\n')[0] for pair in test_data]
 
-# Sonuçlar ölçüldü.
-# Ortalama benzerlik hesaplama
 average_similarity = calculate_similarity(predictions, true_answers)
 print(f"Ortalama Benzerlik: {average_similarity * 100:.2f}%")
+
