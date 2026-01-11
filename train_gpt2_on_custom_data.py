@@ -7,11 +7,9 @@ from torch.utils.data import Dataset
 
 df = pd.read_csv("data/client_hostname.csv")
 
-# Küçük bir veri alt kümesi ile başlayın
 sample_size = 200  # Eğitim için küçük bir alt küme (örneğin 1000 örnek)
 df_sample = df.sample(n=sample_size, random_state=42)  # random_state, aynı alt kümenin her seferinde seçilmesini sağlar
 
-# Soru-cevap çiftlerini oluşturuldu.
 def generate_question_answer_pairs(df):
     qa_pairs = []
     for _, row in df.iterrows():
@@ -21,7 +19,6 @@ def generate_question_answer_pairs(df):
 
 train_data = generate_question_answer_pairs(df_sample)
 
-# Model ve tokenizer yüklendi.
 model_name = "gpt2"
 tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 if tokenizer.pad_token is None:
@@ -29,10 +26,8 @@ if tokenizer.pad_token is None:
 
 model = GPT2LMHeadModel.from_pretrained(model_name)
 
-# Eğitim verilerini encode edildi.
 train_encodings = tokenizer(train_data, return_tensors='pt', padding=True, truncation=True, max_length=512)
 
-# Özel veri kümesi sınıfı tanımlandı.
 class CustomDataset(Dataset):
     def __init__(self, encodings):
         self.encodings = encodings
@@ -47,11 +42,8 @@ class CustomDataset(Dataset):
 
 train_dataset = CustomDataset(train_encodings)
 
-# Eğitim ayarları yapıldı
 from transformers import TrainingArguments
 
-#batchleri artırarak hızlı çalışması sağlandı.
-#epoch sayısı ile overfit olma durumu engellendi.
 training_args = TrainingArguments(
     output_dir="./results",
     per_device_train_batch_size=8,  # Batch boyutunu artırabilirsiniz
@@ -64,16 +56,15 @@ training_args = TrainingArguments(
     logging_steps=10,  # Loglama sıklığını ayarlayabilirsiniz
 )
 
-# Trainer sınıfını oluşturun
 trainer = Trainer(
     model=model,
     args=training_args,
     train_dataset=train_dataset,
 )
-#Gerekli testlerden sonra model eğitilmeye başlandı.
-# Modeli eğitildi.
+
+
 trainer.train()
 
-# Eğitimli model ve tokenizer'ı kaydedildi.
 model.save_pretrained("./trained_model")
 tokenizer.save_pretrained("./trained_model")
+
