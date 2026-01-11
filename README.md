@@ -1,64 +1,94 @@
-# Performans Değerlendirme Raporu
+# 📊 Log Analizi ve RAG Tabanlı Soru-Cevap Sistemi
 
-## 1. Proje Tanımı
-Bu projede, log verilerini kullanarak bir soru-cevap sisteminin performansını değerlendirdik. Sistemin doğruluğunu ve performansını ölçmek amacıyla çeşitli metrikler kullanarak sistemin başarısını inceledik.
+Bu proje, büyük ölçekli sistem loglarını analiz ederek, kullanıcıların doğal dilde sorduğu sorulara yanıt veren bir **RAG (Retrieval-Augmented Generation)** sistemi geliştirmeyi amaçlar. Sistem, **FAISS** vektör veritabanı ve **GPT-2** dil modelini entegre ederek log verilerinden anlamlı içgörüler sunar.
 
-## 2. Veri İşleme
-**Veri Kümesi:**
-- Kullanılan veri kümesi, 700,000 kayıt içeren bir log dosyasından türetilmiştir. Ancak, işlem süresinin uzunluğu nedeniyle analiz için daha küçük bir veri alt kümesi kullanılmıştır.
-- Küçük veri alt kümesi olarak 200 örnek seçilmiştir.
+## 🚀 Proje Hakkında
+Geleneksel log analiz yöntemleri genellikle manuel sorgulara veya statik dashboard'lara dayanır. Bu projede ise Generative AI (Üretken Yapay Zeka) kullanılarak, log verileriyle "konuşulabilen" bir yapı kurulmuştur.
 
-**Veri Temizleme:**
-- Log verileri, ham formatından işlenebilir formata dönüştürülmüştür.
-- Eksik değerler (NaN) ve tutarsızlıklar düzeltilmiş, veri kalitesi artırılmıştır.
-- Soru-cevap çiftleri oluşturulmuş ve bu çiftler modelin değerlendirilmesinde kullanılmıştır.
+**Temel Özellikler:**
+* **Doğal Dil İşleme:** Kullanıcı sorularını anlama ve bağlama uygun yanıt üretme.
+* **Vektör Arama:** FAISS ile hızlı bilgi geri getirme (Retrieval).
+* **Uçtan Uca Akış:** Ham veriden yanıt üretimine kadar tam entegre pipeline.
 
-## 3. Model Entegrasyonu
-**RAG Modelinin Entegrasyonu:**
-- **RAG Modeli:** Retrieval-Augmented Generation (RAG) modeli, bilgiyi geri getirme (retrieval) ve metin üretimi (generation) bileşenlerini birleştirir. Bu model, önceden eğitilmiş bir dil modeli ile birlikte bilgi tabanı sorgulama yeteneği sağlar.
-- **Entegrasyon Süreci:** 
-  - **Veri Hazırlığı:** 
-    - **Vektör Veri Tabanı:** Log verilerinden elde edilen önemli bilgilerle bir vektör veri tabanı oluşturulmuştur. Bu işlem için `FAISS` kütüphanesi kullanılmıştır. 
-    - **Vektörizasyon:** Log verileri, metin gömme (embedding) yöntemleri kullanılarak vektörlere dönüştürülmüştür. Bu vektörler, bilgilere hızlı erişim sağlamak amacıyla indekslenmiştir.
-  - **RAG Modeli:** 
-    - **Modül Yapılandırması:** PyTorch ve Hugging Face `transformers` kütüphaneleri kullanılarak, RAG modelinin hem bilgi geri getirme hem de metin üretim modülleri entegre edilmiştir.
-    - **Bilgi Geri Getirme:** Model, kullanıcı sorularına en uygun bilgileri vektör veri tabanından getirir.
-    - **Metin Üretimi:** Geri getirilen bilgileri kullanarak doğru ve anlamlı yanıtlar üretir.
-  - **Performans ve Test:** Modelin performansı, doğruluk ve hız metrikleri kullanılarak değerlendirilmiştir.
+---
 
-**Model:**
-- GPT-2 modeli, soru-cevap sistemine uygun şekilde yapılandırılmıştır.
-- Eğitim süreci sırasında model, belirli bir hiperparametre seti ile optimize edilmiştir.
+## 🛠️ Kullanılan Teknolojiler ve Mimari
 
-**Eğitim Parametreleri:**
-- Eğitim süresi: 3 Epoch
-- Batch boyutu: 4
+Proje aşağıdaki temel bileşenler üzerine inşa edilmiştir:
 
-## 4. Performans Değerlendirmesi
-**Test Verisi:**
-- 100 örnekten oluşan bir test veri alt kümesi kullanılmıştır.
-- Gerçek ve tahmin edilen yanıtlar arasındaki benzerlik hesaplanmıştır.
+| Bileşen | Teknoloji / Kütüphane | Açıklama |
+| :--- | :--- | :--- |
+| **Dil Modeli (LLM)** | GPT-2 (Fine-tuned) | Metin üretimi ve yanıt oluşturma. |
+| **Vektör DB** | FAISS | Embedding vektörlerinin indekslenmesi ve hızlı aranması. |
+| **Framework** | PyTorch & Hugging Face | Model eğitimi ve transformer mimarisi. |
+| **Veri İşleme** | Pandas & NumPy | Log temizleme ve manipülasyon. |
 
-**Benzerlik Hesaplaması:**
-- `cosine_similarity` metodu kullanılarak ortalama benzerlik skoru hesaplanmıştır.
-- Ortalama Benzerlik: **%90** (Not: Bu oran daha doğru bir hesaplama sonucu elde edilen yüzdedir, örneğin 0.90 x 100 = %90)
+### Model Mimarisi (RAG)
+Sistem **Retrieval-Augmented Generation** mimarisini kullanır:
+1.  **Retrieval (Geri Getirme):** Kullanıcı sorusu vektöre dönüştürülür ve FAISS veritabanında en alakalı log kayıtları bulunur.
+2.  **Generation (Üretim):** Bulunan log kayıtları "bağlam" (context) olarak GPT-2 modeline verilir ve nihai yanıt üretilir.
 
-## 5. Karşılaşılan Zorluklar
-- **Veri İşleme Süresi:** 700,000 kayıt içeren büyük veri setlerinin işlenmesi uzun sürdü. Bu nedenle, daha küçük bir veri kümesi ile çalışmak zorunda kaldık. Bu, modelin aşırı öğrenmesine neden olabilir.
-- **Model Performansı:** Modelin yanıtlarının doğruluğu, özellikle uzun metinlerde sınırlı kalmıştır. Gömme vektörlerinin hesaplanması ve benzerlik ölçümü sırasında bazı teknik zorluklar yaşanmıştır.
-- **CSV Dosyası Sorunları:** CSV dosyasındaki NaN değerleri doğruluk oranlarını olumsuz etkiledi.
+---
 
-## 6. Sonuçlar ve Öneriler
-**Sonuçlar:**
-- Sistem, belirli bir doğruluk seviyesine ulaşmış olsa da, benzerlik oranı daha yüksek olabilir. Bu, modelin eğitiminde kullanılan verilerin çeşitliliği ve kalitesine bağlıdır.
+## 📂 Veri Seti ve İşleme Süreci
 
-**Öneriler:**
-- Eğitim veri setini artırmak ve modelin hiperparametrelerini yeniden yapılandırmak faydalı olabilir.
-- Daha geniş bir veri kümesi üzerinde yeniden eğitim yapılarak modelin performansı artırılabilir.
+### Veri Kaynağı
+Proje başlangıcında **700.000 kayıt** içeren ham bir log dosyası kullanılmıştır.
 
-## 7. Gelecek Çalışmalar
-- Modelin daha uzun süreli eğitimleri ve daha büyük veri kümesi ile performans iyileştirmeleri hedeflenmelidir.
-- Farklı metrikler ve performans testleri ile sistemin kapsamlı değerlendirmesi yapılmalıdır.
-- **Paralel Yapı Kullanımı:** Bu projede paralel bir yapı kullandım, ancak daha büyük veri setlerinde bu yapı sınırlı kalabilir. Bunun yerine, C++ kütüphanelerinden faydalanılması modelin işlem sürelerini azaltabilir ve performansı artırabilir.
-- **Gelişmiş Modeller:** GPT-4 veya daha yeni sürümler kullanıldığında, daha doğru ve kapsamlı yanıtlar elde edilebilir. 
+### Ön İşleme ve Pilot Çalışma (PoC)
+Büyük veri setinin işlenmesindeki donanım kısıtları ve optimizasyon ihtiyaçları nedeniyle, projenin bu aşaması bir **Proof of Concept (Kavram Kanıtı)** olarak tasarlanmıştır.
 
+1.  **Temizleme:** Ham log verileri parse edildi, `NaN` değerler ve tutarsız kayıtlar temizlendi.
+2.  **Örnekleme:** Analiz ve model eğitimi için 700.000 kayıt arasından stratejik olarak seçilen **200 adet yüksek nitelikli örnek** kullanıldı.
+3.  **Vektörizasyon:** Metin verileri embedding katmanından geçirilerek vektör uzayına taşındı.
+
+---
+
+## 📈 Performans Değerlendirmesi
+
+Modelin başarısı, test veri kümesi üzerinde yapılan karşılaştırmalarla ölçülmüştür.
+
+* **Test Verisi:** 100 örneklem.
+* **Metrik:** Cosine Similarity (Kosinüs Benzerliği).
+* **Eğitim Parametreleri:** 3 Epoch, Batch Size: 4.
+
+| Metrik | Skor | Not |
+| :--- | :--- | :--- |
+| **Ortalama Benzerlik** | **%90** | Modelin üretilen yanıtları ile referans yanıtlar arasındaki anlamsal yakınlık. |
+
+*> **Not:** %90'lık başarı oranı, pilot veri setinin (200 örnek) sınırlı olmasından kaynaklı "overfitting" (aşırı öğrenme) etkisini içerebilir. Geniş veri setlerinde bu oran değişkenlik gösterebilir.*
+
+---
+
+## ⚠️ Karşılaşılan Zorluklar
+
+1.  **Veri Hacmi ve İşlem Gücü:** 700.000 satırlık verinin vektörizasyonu ve eğitimi, mevcut donanım altyapısında darboğaz oluşturduğu için örneklem (sampling) yöntemine gidildi.
+2.  **Bağlam Uzunluğu (Context Window):** GPT-2 modelinin token limitleri, çok uzun log satırlarının analizinde bilgi kaybına yol açabildi.
+3.  **Veri Kalitesi:** CSV dosyasındaki kirlilik ve eksik veriler, ilk aşamada modelin halüsinasyon görmesine (hatalı bilgi üretimi) neden oldu.
+
+---
+
+## 🔮 Gelecek Çalışmalar ve Geliştirme Planı
+
+Bu projeyi daha ileriye taşımak için hedeflenen adımlar şunlardır:
+
+* **Modern LLM Entegrasyonu:** GPT-2 yerine daha güncel ve hafif modellerin (Örn: TinyLlama, DistilGPT veya Mistral) kullanılması.
+* **Optimizasyon:** İşlem sürelerini düşürmek için **Model Quantization (4-bit/8-bit)** tekniklerinin ve GPU hızlandırmasının (CUDA) uygulanması.
+* **Veri Genişletme:** Pilot çalışmanın başarısı üzerine, 700.000 verinin tamamının işlenebileceği dağıtık bir yapıya (Örn: Spark veya Ray) geçilmesi.
+* **Gelişmiş Metrikler:** Performans ölçümüne ROUGE ve BLEU skorlarının eklenmesi.
+
+---
+
+## 💻 Kurulum ve Çalıştırma
+
+Projeyi yerel ortamınızda çalıştırmak için:
+
+```bash
+# Projeyi klonlayın
+git clone [https://github.com/kullaniciadi/proje-adi.git](https://github.com/kullaniciadi/proje-adi.git)
+
+# Gerekli kütüphaneleri yükleyin
+pip install -r requirements.txt
+
+# Uygulamayı başlatın
+python main.py
