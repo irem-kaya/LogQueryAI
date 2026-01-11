@@ -7,8 +7,8 @@ from torch.utils.data import Dataset
 
 df = pd.read_csv("data/client_hostname.csv")
 
-sample_size = 200  # Eğitim için küçük bir alt küme (örneğin 1000 örnek)
-df_sample = df.sample(n=sample_size, random_state=42)  # random_state, aynı alt kümenin her seferinde seçilmesini sağlar
+sample_size = 200 
+df_sample = df.sample(n=sample_size, random_state=42) 
 
 def generate_question_answer_pairs(df):
     qa_pairs = []
@@ -67,4 +67,5 @@ trainer.train()
 
 model.save_pretrained("./trained_model")
 tokenizer.save_pretrained("./trained_model")
+
 
