@@ -77,18 +77,3 @@ Bu projeyi daha ileriye taşımak için hedeflenen adımlar şunlardır:
 * **Veri Genişletme:** Pilot çalışmanın başarısı üzerine, 700.000 verinin tamamının işlenebileceği dağıtık bir yapıya (Örn: Spark veya Ray) geçilmesi.
 * **Gelişmiş Metrikler:** Performans ölçümüne ROUGE ve BLEU skorlarının eklenmesi.
 
----
-
-## 💻 Kurulum ve Çalıştırma
-
-Projeyi yerel ortamınızda çalıştırmak için:
-
-```bash
-# Projeyi klonlayın
-git clone [https://github.com/kullaniciadi/proje-adi.git](https://github.com/kullaniciadi/proje-adi.git)
-
-# Gerekli kütüphaneleri yükleyin
-pip install -r requirements.txt
-
-# Uygulamayı başlatın
-python main.py
